@@ -1,0 +1,72 @@
+
+from datetime import datetime, timedelta
+def get_date_range(start_date, end_date):
+    """
+    获取时间范围的每日，返回日数组
+    """
+    start = datetime.strptime(start_date, '%Y-%m-%d')
+    end = datetime.strptime(end_date, '%Y-%m-%d')
+    dates = []
+    current = start
+    while current <= end:
+        dates.append(current.strftime('%Y-%m-%d'))
+        current += timedelta(days=1)
+    return dates
+
+import zipfile
+import os
+def extract_single_file(zip_path, target_dir, new_filename):
+    """
+    解压单个文件并直接重命名
+    """
+    with zipfile.ZipFile(zip_path, 'r') as zip_file:
+        # 获取ZIP内所有文件名
+        members = zip_file.namelist()
+
+        if not members:
+            raise ValueError("ZIP文件为空")
+
+        # 只取第一个文件
+        original_name = members[0]
+
+        # 目标文件完整路径
+        target_file = os.path.join(target_dir, new_filename)
+
+        # 直接读取文件内容并写入新文件
+        with zip_file.open(original_name) as source, open(target_file, 'wb') as target:
+            target.write(source.read())
+
+    print(f"文件已保存到: {target_file}")
+    return target_file
+
+
+
+import msoffcrypto
+
+def remove_excel_password(file_path, password):
+    """原地去除Excel文件的打开密码（直接覆盖原文件）"""
+    # 先读入加密文件
+    with open(file_path, 'rb') as f:
+        file = msoffcrypto.OfficeFile(f)
+        file.load_key(password=password)
+        
+        # 解密内容写入内存
+        decrypted_data = io.BytesIO()
+        file.decrypt(decrypted_data)
+    
+    # 写回原文件（覆盖）
+    with open(file_path, 'wb') as f_out:
+        f_out.write(decrypted_data.getvalue())
+    
+    print(f"✅ 密码已取消，原文件已覆盖: {file_path}")
+
+from datetime import datetime, timedelta
+def get_last_week_range():
+    """返回上周一和上周日的日期，格式为 YYYY-MM-DD"""
+    today = datetime.now().date()
+    monday = today - timedelta(days=today.weekday())
+    last_monday = monday - timedelta(days=7)
+    last_sunday = last_monday + timedelta(days=6)
+    return [last_monday.strftime('%Y-%m-%d'), last_sunday.strftime('%Y-%m-%d')]
+
+
